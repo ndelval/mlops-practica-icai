@@ -1,15 +1,19 @@
 import pandas as pd
-from sklearn import datasets
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 import joblib
 import mlflow
 import mlflow.sklearn
-# Cargar el conjunto de datos
-iris = datasets.load_iris()
-X = iris.data
-y = iris.target
+# Cargar el conjunto de datos desde el archivo CSV
+try:
+ iris = pd.read_csv('data/iris_dataset.csv')
+except FileNotFoundError:
+ print("Error: El archivo 'data/iris_dataset.csv' no fue encontrado.")
+ raise
+# Dividir el DataFrame en características (X) y etiquetas (y)
+X = iris.drop('target', axis=1)
+y = iris['target']
 # Iniciar un experimento de MLflow
 with mlflow.start_run():
  # Dividir los datos en conjuntos de entrenamiento y prueba
@@ -25,7 +29,11 @@ with mlflow.start_run():
  # Guardar el modelo entrenado en un archivo .pkl
  joblib.dump(model, 'model.pkl')
  # Registrar el modelo con MLflow
- mlflow.sklearn.log_model(model, "random-forest-model")
+ mlflow.sklearn.log_model(
+ model,
+ "random-forest-model",
+ serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
+ )
  # Registrar parámetros y métricas
  mlflow.log_param("n_estimators", 100)
  mlflow.log_metric("accuracy", accuracy)
