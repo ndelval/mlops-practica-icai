@@ -1,10 +1,16 @@
+import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix
 import joblib
 import mlflow
 import mlflow.sklearn
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Configuración del servidor de tracking (DagsHub) desde variables de entorno
+tracking_uri = os.environ.get("MLFLOW_TRACKING_URI")
+mlflow.set_tracking_uri(tracking_uri)
 # Cargar el conjunto de datos desde el archivo CSV
 try:
  iris = pd.read_csv('data/iris_dataset.csv')
@@ -39,3 +45,16 @@ with mlflow.start_run():
  mlflow.log_metric("accuracy", accuracy)
  print(f"Modelo entrenado y precisión: {accuracy:.4f}")
  print("Experimento registrado con MLflow.")
+ # --- Sección de Reporte para CML ---
+ # 1. Generar la matriz de confusión
+ cm = confusion_matrix(y_test, y_pred)
+ plt.figure(figsize=(8, 6))
+ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+ plt.title('Matriz de Confusión')
+ plt.xlabel('Predicciones')
+ plt.ylabel('Valores Reales')
+ plt.savefig('confusion_matrix.png')
+ print("Matriz de confusión guardada como 'confusion_matrix.png'")
+ # --- Fin de la sección de Reporte ---
+ # Guardar el artefacto en MLflow remoto
+ mlflow.log_artifact("confusion_matrix.png")
