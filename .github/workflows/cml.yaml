@@ -42,6 +42,11 @@ jobs:
           python3 -m pip install --upgrade pip
           pip install pyyaml
           pip install -r requirements.txt
+      # setup-cml instala canvas@2, que no tiene binario precompilado para Node 22
+      - name: Setup Node 20 for CML
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - uses: iterative/setup-cml@v1
       - name: Run training script
         env:
